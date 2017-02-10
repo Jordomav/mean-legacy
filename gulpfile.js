@@ -1,25 +1,47 @@
-/*jshint node: true*/
-var gulp = require('gulp'),
-    less = require('gulp-less'),
-    env = require('node-env-file'), //create the env
-    envfile = require('envfile'), //parse the env
-    jshint = require('gulp-jshint'),
-    htmlify = require('gulp-angular-htmlify'),
-    open = require('gulp-open'),
-    nodemon = require('gulp-nodemon'),
-    autoprefixer = require('gulp-autoprefixer'),
-    notify = require('gulp-notify'),
-    concat = require('gulp-concat'),
-    templateCache = require('gulp-angular-templatecache'),
-    sourcemaps = require('gulp-sourcemaps'),
-    watch = require('gulp-watch'),
-    uglify = require('gulp-uglify'),
-    gulpif = require('gulp-if'),
-    livereload = require('gulp-livereload'),
-    ngAnnotate = require('gulp-ng-annotate'),
-    plumber = require('gulp-plumber'),
+var autoprefixer = require('gulp-autoprefixer'),
     babel = require('gulp-babel'),
-    iife = require('gulp-iife');
+    concat = require('gulp-concat'),
+    env = require('node-env-file'),
+    envfile = require('envfile'),
+    gulp = require('gulp'),
+    htmlify = require('gulp-angular-htmlify'),
+    iife = require('gulp-iife'),
+    jshint = require('gulp-jshint'),
+    livereload = require('gulp-livereload'),
+    less = require('gulp-less'),
+    ngAnnotate = require('gulp-ng-annotate'),
+    nodemon = require('gulp-nodemon'),
+    open = require('gulp-open'),
+    plumber = require('gulp-plumber'),
+    sourcemaps = require('gulp-sourcemaps'),
+    templateCache = require('gulp-angular-templatecache'),
+    uglify = require('gulp-uglify'),
+    watch = require('gulp-watch');
+
+
+var cssDeps = [
+    './node_modules/bootstrap/dist/css/bootstrap.min.css',
+    './node_modules/font-awesome/css/font-awesome.min.css'
+];
+
+var jsDeps = [
+    './node_modules/angular/angular.min.js',
+    './node_modules/angular-ui-router/release/angular-ui-router.min.js'
+];
+
+var buildWatch = [
+    './build/**/*.js',
+    './build/**/*.css',
+    './build/**/*.html'
+];
+
+var watchers = {
+    javascripts: ['app/*.js', 'app/**/*.js'],
+    styles: 'less/**/*.less',
+    html: 'app/**/*.html',
+    images: 'images/**/*.*'
+
+};
 
 gulp.task('env', function () {
     env(__dirname + '/.env', {overwrite: true});
@@ -35,7 +57,17 @@ gulp.task('templates', function () {
         .pipe(livereload());
 });
 
-gulp.task('scripts', function () {
+gulp.task('less', function () {
+    gulp.src([
+        './less/app.less'
+    ])
+        .pipe(plumber())
+        .pipe(less())
+        .pipe(autoprefixer())
+        .pipe(gulp.dest('./build/css'));
+});
+
+gulp.task('js', function () {
     var baseDir = __dirname + '/app',
         outputDir = __dirname + '/build/js',
         outputFilename = 'app.js',
@@ -55,48 +87,19 @@ gulp.task('scripts', function () {
         }))
         .pipe(concat(outputFilename))
         .pipe(ngAnnotate())
-        .pipe(gulpif(env.PRODUCTION === 'true', uglify()))
         .pipe(sourcemaps.write())
-        .pipe(gulp.dest(outputDir))
-        .pipe(notify({
-            title: 'ngAnnotate',
-            subtitle: 'Angular Compiled!',
-            message: ' '
-        }));
+        .pipe(gulp.dest(outputDir));
 });
 
+
 gulp.task('js-deps', function () {
-    gulp.src([
-        './node_modules/angular/angular.min.js',
-        './node_modules/angular-ui-router/release/angular-ui-router.min.js',
-        './node_modules/angular-local-storage/dist/angular-local-storage.min.js'
-        //Add your scripts here
-    ])
+    gulp.src(jsDeps)
         .pipe(concat('deps.js'))
         .pipe(gulp.dest('./build/js'));
 });
 
-gulp.task('less', function () {
-    gulp.src([
-        './less/app.less' //main entry point for styles. All other sheets should be included here.
-    ])
-        .pipe(plumber())
-        .pipe(less())
-        .pipe(autoprefixer())
-        .pipe(gulp.dest('./build/css'));
-});
-
-gulp.task('copy-img', function () {
-    gulp.src(['./images/*.*', './images/**/*.*'])
-        .pipe(gulp.dest('./build/images'));
-});
-
 gulp.task('css-deps', function () {
-    gulp.src([
-        './node_modules/bootstrap/dist/css/bootstrap.min.css',
-        './node_modules/font-awesome/css/font-awesome.min.css'
-        //Add your third party styles here
-    ])
+    gulp.src(cssDeps)
         .pipe(concat('deps.css'))
         .pipe(gulp.dest('./build/css'));
 
@@ -107,29 +110,30 @@ gulp.task('css-deps', function () {
         .pipe(gulp.dest('./build/css'));
 });
 
+gulp.task('copy-image', function () {
+    gulp.src(['./images/*.*', './images/**/*.*'])
+        .pipe(gulp.dest('./build/images'));
+});
+
 gulp.task('favicon', function () {
     gulp.src('./app/favicon.ico')
         .pipe(gulp.dest('./build'));
 });
 
 gulp.task('watch', function () {
-    gulp.watch([
-        './build/**/*.js',
-        './build/**/*.css',
-        './build/**/*.html'
-    ], function (event) {
+    gulp.watch(buildWatch, function (event) {
         return gulp.src(event.path)
             .pipe(livereload());
     });
 
     gulp.watch(['.env'], ['env']);
-    gulp.watch(['app/*.js', 'app/**/*.js'], ['scripts']);
-    gulp.watch('less/**/*.less', ['less']);
-    gulp.watch('app/**/*.html', ['templates']);
-    gulp.watch('images/**/*.*', ['copy-img']);
+    gulp.watch(watchers.javascripts, ['js']);
+    gulp.watch(watchers.styles, ['less']);
+    gulp.watch(watchers.html, ['templates']);
+    gulp.watch(watchers.images, ['copy-img']);
 });
 
-gulp.task('serve', ['env', 'scripts', 'js-deps', 'css-deps', 'templates', 'less', 'copy-img', 'favicon', 'watch'], function () {
+gulp.task('serve', ['env', 'js', 'js-deps', 'css-deps', 'templates', 'less', 'copy-image', 'favicon', 'watch'], function () {
     nodemon({
         script: 'app.js',
         ext: 'js html ejs',
@@ -139,7 +143,4 @@ gulp.task('serve', ['env', 'scripts', 'js-deps', 'css-deps', 'templates', 'less'
     livereload.listen();
 });
 
-/**
- * General Build
- */
 gulp.task('default', ['serve']);

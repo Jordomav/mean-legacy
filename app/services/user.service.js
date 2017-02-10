@@ -5,11 +5,13 @@ function User($state, localStorageService) {
 
     var vm = this;
     vm.currentUser = null;
+    vm.userToken = null;
 
     this.isLoggedIn = () => vm.currentUser !== null;
 
-    this.logIn = (user) => {
+    this.logIn = (user, token) => {
         localStorageService.set('currentUser', user);
+        localStorageService.set('userToken', token);
         this.getLoggedInUser();
         $state.go('home');
     };
@@ -18,9 +20,15 @@ function User($state, localStorageService) {
         vm.currentUser = localStorageService.get('currentUser');
     };
 
+    this.getUserToken = () => {
+        return localStorageService.get('userToken');
+    };
+
     this.logout = () => {
         localStorageService.remove('currentUser');
+        localStorageService.remove('userToken');
         vm.currentUser = null;
+        vm.userToken = null;
         $state.go('login');
     };
 }

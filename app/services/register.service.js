@@ -17,7 +17,7 @@ function Register($http, $state, User) {
     this.createAccount = () => {
         if (this.registration.password === this.registration.confirmPassword) {
             $http.post('/postUser', this.registration).then(res => {
-                User.logIn(res.data.user);
+                User.logIn(res.data.user, res.data.token);
                 $state.go('home');
                 console.log(res);
             }, rej => {

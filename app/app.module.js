@@ -1,17 +1,15 @@
 angular.module('app', [
     'templates',
     'ui.router',
-    'LocalStorageModule',
     'directives',
     'services',
     'home',
     'register',
     'login',
 ])
-    .config(function ($urlRouterProvider, $stateProvider, localStorageServiceProvider) {
-        localStorageServiceProvider.setPrefix('yourPrefix');
+    .config(function ($urlRouterProvider, $stateProvider) {
         $urlRouterProvider.otherwise('/home');
     })
-    .run(function () {
-
+    .run(function (User) {
+        User.getLoggedInUser();
     });

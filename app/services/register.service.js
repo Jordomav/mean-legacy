@@ -1,7 +1,7 @@
 angular.module('services')
     .service('Register', Register);
 
-function Register($http, $state, User) {
+function Register(API, $state, User) {
 
     this.registration = {
         firstName: '',
@@ -16,7 +16,7 @@ function Register($http, $state, User) {
 
     this.createAccount = () => {
         if (this.registration.password === this.registration.confirmPassword) {
-            $http.post('/postUser', this.registration).then(res => {
+            API.post('/postUser', this.registration).then(res => {
                 User.logIn(res.data.user, res.data.token);
                 $state.go('home');
                 console.log(res);

@@ -1,7 +1,7 @@
 angular.module('services')
     .service('User', User);
 
-function User($state, localStorageService) {
+function User($state, localStorage) {
 
     var vm = this;
     vm.currentUser = null;
@@ -10,23 +10,23 @@ function User($state, localStorageService) {
     this.isLoggedIn = () => vm.currentUser !== null;
 
     this.logIn = (user, token) => {
-        localStorageService.set('currentUser', user);
-        localStorageService.set('userToken', token);
+        localStorage.add('currentUser', user);
+        localStorage.add('userToken', token);
         this.getLoggedInUser();
         $state.go('home');
     };
 
     this.getLoggedInUser = () => {
-        vm.currentUser = localStorageService.get('currentUser');
+        vm.currentUser = localStorage.get('currentUser');
     };
 
     this.getUserToken = () => {
-        return localStorageService.get('userToken');
+        return localStorage.get('userToken');
     };
 
     this.logout = () => {
-        localStorageService.remove('currentUser');
-        localStorageService.remove('userToken');
+        localStorage.remove('currentUser');
+        localStorage.remove('userToken');
         vm.currentUser = null;
         vm.userToken = null;
         $state.go('login');

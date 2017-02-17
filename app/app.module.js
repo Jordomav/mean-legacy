@@ -7,7 +7,8 @@ angular.module('app', [
     'register',
     'login',
 ])
-    .config(function ($urlRouterProvider, $stateProvider) {
+    .config(function ($urlRouterProvider, $stateProvider, $qProvider) {
+        $qProvider.errorOnUnhandledRejections(false);
         $urlRouterProvider.otherwise('/home');
     })
     .run(function (User) {

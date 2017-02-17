@@ -5,12 +5,11 @@ const express = require('express'),
     bodyParser = require('body-parser'),
     cookieParser = require('cookie-parser'),
     passport = require('passport'),
-    // Uncomment this to add mongoDB
+    // Require all module files
     mongo = require('./modules/db'),
     routing = require('./modules/routing'),
     passportMiddleware = require('./modules/passport'),
-    jwt = require('./modules/jwt'),
-    mongoose = require('mongoose');
+    jwt = require('./modules/jwt');
 
 
 app.set('views', path.join(__dirname, 'view'));
@@ -37,6 +36,7 @@ mongo.start(models);
 var routesPath = __dirname + '/router/';
 routing.build(routesPath, app);
 
+// Start the server
 app.listen(process.env.PORT, function () {
     console.log(`Started at http://localhost:${process.env.PORT}`);
 });

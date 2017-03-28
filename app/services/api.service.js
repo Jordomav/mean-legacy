@@ -4,8 +4,8 @@ angular.module('services')
 function API($http, User) {
 
     this.post = (route, body) => {
-        var token = User.getUserToken();
-        return $http.post(route, {data: body, token: token});
+        body.token = User.getUserToken();
+        return $http.post(route, body);
     };
 
     this.get = (route) => {
@@ -19,7 +19,7 @@ function API($http, User) {
     };
 
     this.patch = (route, body) => {
-        var token = User.getUserToken();
-        return $http.patch(route, {data: body, token: token});
+        body.token = User.getUserToken();
+        return $http.patch(route, body);
     };
 }

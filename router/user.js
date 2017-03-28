@@ -41,6 +41,9 @@ module.exports = (app) => {
                 user.save();
             });
         });
-        res.json({user});
+        res.json({
+            user: user,
+            token: jwt.sign(user._id.toHexString(), process.env.JSONSECRET)
+        });
     });
 };
